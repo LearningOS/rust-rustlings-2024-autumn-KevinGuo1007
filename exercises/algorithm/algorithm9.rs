@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -38,15 +37,19 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.count += 1;
+        if self.count < self.items.len() {
+            self.items[self.count] = value;
+        } else {
+            self.items.push(value);
+        }
+        self.heapify_up(self.count);
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
         idx / 2
     }
 
-    fn children_present(&self, idx: usize) -> bool {
-        self.left_child_idx(idx) <= self.count
-    }
 
     fn left_child_idx(&self, idx: usize) -> usize {
         idx * 2
@@ -56,9 +59,52 @@ where
         self.left_child_idx(idx) + 1
     }
 
+    // fn children_present(&self, idx: usize) -> bool {
+    //     self.left_child_idx(idx) <= self.count
+    // }
+
+    // fn left_child_idx(&self, idx: usize) -> usize {
+    //     idx * 2
+    // }
+
+    // fn right_child_idx(&self, idx: usize) -> usize {
+    //     self.left_child_idx(idx) + 1
+    // }
+
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+		let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        if right <= self.count && (self.comparator)(&self.items[right], &self.items[left]) {
+            right
+        } else {
+            left
+        }
+    }
+    fn heapify_up(&mut self, idx: usize) {
+        let mut current_idx = idx;
+    while current_idx > 1 {
+        let parent_idx = self.parent_idx(current_idx);
+        if (self.comparator)(&self.items[current_idx], &self.items[parent_idx]) {
+            self.items.swap(current_idx, parent_idx);
+            current_idx = parent_idx;
+        } else {
+            break;
+            }
+        }
+    }
+
+    fn heapify_down(&mut self, idx: usize) {
+        let mut current_idx = idx;
+        while self.left_child_idx(current_idx) <= self.count {
+            let smallest_child = self.smallest_child_idx(current_idx);
+            if (self.comparator)(&self.items[smallest_child], &self.items[current_idx]) {
+                self.items.swap(current_idx, smallest_child);
+                current_idx = smallest_child;
+            } else {
+                break;
+            }
+        }
     }
 }
 
@@ -79,14 +125,24 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
-    }
+        if self.is_empty() {
+            return None;
+        }
+        let root = self.items[1].clone();  // Clone the root
+        let last = self.items.pop().unwrap(); // Remove the last element
+        self.count -= 1;
+        if self.count > 0 {
+            self.items[1] = last; // Replace root with the last element
+            self.heapify_down(1); // Restore heap property
+        }
+        Some(root)
+        }
 }
 
 pub struct MinHeap;

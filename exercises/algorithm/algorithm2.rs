@@ -2,7 +2,7 @@
 	double linked list reverse
 	This problem requires you to reverse a doubly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -74,19 +74,37 @@ impl<T> LinkedList<T> {
     }
 	pub fn reverse(&mut self){
 		// TODO
+        let mut current = self.start;
+        let mut prev = None;
+
+        while let Some(mut current_ptr) = current {
+            unsafe {
+                let next = (*current_ptr.as_ptr()).next;
+                (*current_ptr.as_ptr()).next = prev;
+                (*current_ptr.as_ptr()).prev = next;
+                prev = Some(current_ptr);
+                current = next;
+            }
+        }
+        std::mem::swap(&mut self.start, &mut self.end);
+    }
 	}
-}
+
 
 impl<T> Display for LinkedList<T>
 where
     T: Display,
-{
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self.start {
-            Some(node) => write!(f, "{}", unsafe { node.as_ref() }),
-            None => Ok(()),
+{fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    let mut current = self.start;
+    while let Some(node) = current {
+        write!(f, "{}", unsafe { node.as_ref() })?;
+        current = unsafe { (*node.as_ptr()).next };
+        if current.is_some() {
+            write!(f, ", ")?;
         }
     }
+    Ok(())
+}
 }
 
 impl<T> Display for Node<T>
@@ -94,10 +112,7 @@ where
     T: Display,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self.next {
-            Some(node) => write!(f, "{}, {}", self.val, unsafe { node.as_ref() }),
-            None => write!(f, "{}", self.val),
-        }
+        write!(f, "{}", self.val)
     }
 }
 

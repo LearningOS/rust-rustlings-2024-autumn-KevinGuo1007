@@ -27,23 +27,25 @@
 //
 // You should NOT modify any existing code except for adding two lines of attributes.
 
-// I AM NOT DONE
 
-extern "Rust" {
-    fn my_demo_function(a: u32) -> u32;
-    fn my_demo_function_alias(a: u32) -> u32;
-}
 
-mod Foo {
+mod foo {
     // No `extern` equals `extern "Rust"`.
-    fn my_demo_function(a: u32) -> u32 {
+    pub fn my_demo_function(a: u32) -> u32 {
         a
     }
+    pub fn my_demo_function_alias(a: u32) -> u32 {
+        a + 1 
+    }
 }
+
+pub use foo::{my_demo_function as other_my_demo_function, my_demo_function_alias as other_my_demo_function_alias};
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::foo::my_demo_function;
+    use crate::foo::my_demo_function_alias;
 
     #[test]
     fn test_success() {
@@ -54,8 +56,8 @@ mod tests {
         // SAFETY: We know those functions are aliases of a safe
         // Rust function.
         unsafe {
-            my_demo_function(123);
-            my_demo_function_alias(456);
+            let result1 = my_demo_function(123);
+            let result2 = my_demo_function_alias(456);
         }
     }
 }
